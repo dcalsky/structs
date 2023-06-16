@@ -22,13 +22,31 @@ type Struct struct {
 	TagName string
 }
 
+type option struct {
+	TagName string
+}
+
+type withOption func(option *option)
+
+func WithTagName(tagName string) withOption {
+	return func(option *option) {
+		option.TagName = tagName
+	}
+}
+
 // New returns a new *Struct with the struct s. It panics if the s's kind is
 // not struct.
-func New(s interface{}) *Struct {
+func New(s interface{}, options ...withOption) *Struct {
+	cfg := option{
+		TagName: DefaultTagName,
+	}
+	for _, opt := range options {
+		opt(&cfg)
+	}
 	return &Struct{
 		raw:     s,
 		value:   strctVal(s),
-		TagName: DefaultTagName,
+		TagName: cfg.TagName,
 	}
 }
 
